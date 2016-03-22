@@ -49,9 +49,11 @@
             this.TextBoxFormattedSQL.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.TextBoxFormattedSQL.BackColor = System.Drawing.SystemColors.Window;
             this.TextBoxFormattedSQL.Font = new System.Drawing.Font("Consolas", 9.75F);
             this.TextBoxFormattedSQL.Location = new System.Drawing.Point(12, 272);
             this.TextBoxFormattedSQL.Name = "TextBoxFormattedSQL";
+            this.TextBoxFormattedSQL.ReadOnly = true;
             this.TextBoxFormattedSQL.Size = new System.Drawing.Size(934, 217);
             this.TextBoxFormattedSQL.TabIndex = 1;
             this.TextBoxFormattedSQL.Text = "";

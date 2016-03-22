@@ -6,13 +6,9 @@ using System.Threading.Tasks;
 
 namespace SqlFormatter
 {
-    public class Formatter
+    public class Formatter : FormatterBase
     {
         public string OriginalSQL;
-
-        private Token currentToken;
-        private Queue<Token> tokens;
-        private StringBuilder buffer;
 
         public Formatter(string originalSql)
         {
@@ -31,21 +27,24 @@ namespace SqlFormatter
             {
                 this.NextToken();
 
-                if(currentToken.Value == "SELECT")
+                if (currentToken.Value == "SELECT")
                     this.FormatSelect();
+
+                else if (currentToken.Value == "UPDATE")
+                    this.FormatUpdate();
             }
 
             return buffer.ToString();
         }
 
+        #region Select specific formatters
+
         private void FormatSelect()
         {
-            buffer.Append(currentToken.Value + " ");
-
-            this.NextToken();
+            this.AddExpectedToken(TokenType.Word, "SELECT");
 
             // Format columns
-            while(currentToken.Value != "FROM")
+            while (currentToken.Value != "FROM")
             {
                 buffer.Append(currentToken.Value);
 
@@ -71,44 +70,144 @@ namespace SqlFormatter
             if (tokens.Count > 0)
                 buffer.Append(" ");
 
-            // Format INNER JOIN
-            if(tokens.Count > 0 && tokens.Peek().Value == "INNER")
+            // Format JOIN
+            if (tokens.Count > 0 && (tokens.Peek().Value == "INNER" || tokens.Peek().Value == "LEFT" || tokens.Peek().Value == "RIGHT"))
             {
-                this.FormatJoin("INNER");
+                this.NextToken();
+                this.FormatJoin(currentToken.Value);
             }
 
+            // Format WHERE
             if(tokens.Count > 0 && tokens.Peek().Value == "WHERE")
             {
                 this.FormatWhere();
+            }
+
+            // Format ORDER BY
+            if (tokens.Count > 0 && (currentToken.Value == "ORDER"|| tokens.Peek().Value == "ORDER"))
+            {
+                if (tokens.Peek().Value == "ORDER")
+                    this.NextToken();
+
+                this.FormatOrderBy();
             }
         }
 
         private void FormatJoin(string joinType)
         {
-            this.NextToken();
-
             buffer.Append("\n");
 
             this.AddExpectedToken(TokenType.Word, joinType);
+
+            if(currentToken.Value == "OUTER")
+            {
+                buffer.Append(currentToken.Value + " ");
+                this.NextToken();
+            }
+
             this.AddExpectedToken(TokenType.Word, "JOIN");
 
             buffer.Append(currentToken.Value + " ");
             this.NextToken();
 
+            if(currentToken.Value == "AS")
+            {
+                buffer.Append(currentToken.Value + " ");
+                this.NextToken();
+                buffer.Append(currentToken.Value + " ");
+                this.NextToken();
+            }
+
             this.AddExpectedToken(TokenType.Word, "ON");
 
             buffer.Append(currentToken.Value + " ");
 
-            while (tokens.Count > 0 && currentToken.Value != "WHERE")
+            while (tokens.Count > 0 && (tokens.Peek().Value != "WHERE" || (currentToken.Value == "INNER" || currentToken.Value == "LEFT" || currentToken.Value == "RIGHT")))
             {
                 this.NextToken();
 
-                buffer.Append(currentToken.Value);
+                if (tokens.Count > 0 && (currentToken.Value == "INNER" || currentToken.Value == "LEFT" || currentToken.Value == "RIGHT"))
+                {
+                    this.FormatJoin(currentToken.Value);
+                }
+                else
+                {
+                    buffer.Append(currentToken.Value);
 
-                if (tokens.Count > 0)
-                    buffer.Append(" ");
+                    if (tokens.Count > 0)
+                        buffer.Append(" ");
+                }
             }
         }
+
+        private void FormatOrderBy()
+        {
+            if (currentToken.Value == "ORDER")
+            {
+                buffer.Append("\n");
+                this.AddExpectedToken(TokenType.Word, "ORDER");
+            }
+
+            this.AddExpectedToken(TokenType.Word, "BY");
+
+            while (tokens.Count > 0)
+            {
+                buffer.Append(currentToken.Value);
+
+                if (tokens.Peek().Value != ",")
+                    buffer.Append(" ");
+
+                this.NextToken();
+
+                if (currentToken.Value == ",")
+                {
+                    buffer.Append(",\n         ");
+                    this.NextToken();
+                }
+            }
+
+            // Append the last item from order by
+            buffer.Append(currentToken.Value);
+        }
+
+        #endregion
+
+        #region Update specific formatters
+
+        private void FormatUpdate()
+        {
+            this.AddExpectedToken(TokenType.Word, "UPDATE");
+
+            // Append the table name
+            this.buffer.Append(currentToken.Value + " ");
+            this.NextToken();
+
+            this.FormatSet();
+
+            if (tokens.Count > 0 && tokens.Peek().Value == "WHERE")
+            {
+                this.FormatWhere();
+            }
+        }
+
+        private void FormatSet()
+        {
+            buffer.Append("\n");
+
+            this.AddExpectedToken(TokenType.Word, "SET");
+
+            while (tokens.Count > 0 && tokens.Peek().Value != "WHERE")
+            {
+                buffer.Append(currentToken.Value + " ");
+                this.NextToken();
+            }
+
+            buffer.Append(currentToken.Value);
+        }
+
+        #endregion
+
+        #region General formatters
 
         private void FormatWhere()
         {
@@ -120,20 +219,46 @@ namespace SqlFormatter
 
             buffer.Append(currentToken.Value + " ");
 
-            while (tokens.Count > 0 && currentToken.Value != "ORDER BY")
+            var complexityLevel = 0;
+
+            while (tokens.Count > 0 && currentToken.Value != "ORDER")
             {
+                if (currentToken.Value == "(")
+                    complexityLevel++;
+
                 this.NextToken();
 
-                buffer.Append(currentToken.Value);
+                if (currentToken.Value == ")")
+                    complexityLevel--;
+
+                if (currentToken.Value != "ORDER")
+                    buffer.Append(currentToken.Value);
+                else
+                    break;
 
                 if (tokens.Count > 0)
                 {
                     if (tokens.Peek().Value == "AND")
                     {
-                        buffer.Append("\n  ");
+                        if (complexityLevel == 0)
+                            buffer.Append("\n  ");
+                        else
+                            buffer.Append(" ");
 
                         this.NextToken();
                         this.AddExpectedToken(TokenType.Word, "AND");
+
+                        buffer.Append(currentToken.Value + " ");
+                    }
+                    else if (tokens.Peek().Value == "OR")
+                    {
+                        if (complexityLevel == 0)
+                            buffer.Append("\n   ");
+                        else
+                            buffer.Append(" ");
+
+                        this.NextToken();
+                        this.AddExpectedToken(TokenType.Word, "OR");
 
                         buffer.Append(currentToken.Value + " ");
                     }
@@ -141,27 +266,10 @@ namespace SqlFormatter
                     {
                         buffer.Append(" ");
                     }
-
                 }
             }
         }
 
-        private void AddExpectedToken(TokenType word, string value)
-        {
-            if (currentToken.Equals(TokenType.Word, value))
-            {
-                buffer.Append(currentToken.Value + " ");
-                this.NextToken();
-            }
-            else
-            {
-                throw new Exception("Unexpected token: " + currentToken.Value);
-            }
-        }
-
-        private void NextToken()
-        {
-            currentToken = tokens.Dequeue();
-        }
+        #endregion
     }
 }

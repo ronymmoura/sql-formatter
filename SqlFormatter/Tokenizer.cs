@@ -53,6 +53,9 @@ namespace SqlFormatter
             if (currentChar == '\'')
                 return this.ReadString();
 
+            if (currentChar == '@')
+                return this.ReadVariable();
+
             var token = this.ReadSymbol();
 
             return token;
@@ -74,6 +77,8 @@ namespace SqlFormatter
                 case ',':
                 case '=':
                 case ';':
+                case '(':
+                case ')':
                     var token = new Token { Value = currentChar.ToString(), Type = TokenType.Symbol };
                     this.buffer.Clear();
                     this.ReadNextChar();
@@ -144,6 +149,25 @@ namespace SqlFormatter
                 Type = TokenType.Word
             };
             
+            this.buffer.Clear();
+
+            return token;
+        }
+
+        private Token ReadVariable()
+        {
+            while (char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '@')
+            {
+                this.buffer.Append(currentChar);
+                this.ReadNextChar();
+            }
+
+            var token = new Token
+            {
+                Value = this.buffer.ToString(),
+                Type = TokenType.Variable
+            };
+
             this.buffer.Clear();
 
             return token;
