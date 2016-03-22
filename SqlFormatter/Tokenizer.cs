@@ -79,6 +79,8 @@ namespace SqlFormatter
                 case ';':
                 case '(':
                 case ')':
+                case '>':
+                case '<':
                     var token = new Token { Value = currentChar.ToString(), Type = TokenType.Symbol };
                     this.buffer.Clear();
                     this.ReadNextChar();

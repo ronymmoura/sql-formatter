@@ -16,6 +16,15 @@ namespace SqlFormatter_Test
             Assert.AreEqual(expected, formatter.Format());
         }
 
+        [TestMethod]
+        public void Select_Distinct()
+        {
+            var expected = "SELECT DISTINCT * \n" +
+                           "FROM TEST";
+            var formatter = new Formatter("SELECT DISTINCT * FROM TEST");
+            Assert.AreEqual(expected, formatter.Format());
+        }
+
         #region Columns
 
         [TestMethod]

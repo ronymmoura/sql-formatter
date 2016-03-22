@@ -304,6 +304,7 @@ namespace SqlFormatter
             buffer.Append(currentToken.Value + " ");
 
             var complexityLevel = 0;
+            var between = false;
 
             while (tokens.Count > 0 && currentToken.Value != "ORDER")
             {
@@ -315,6 +316,9 @@ namespace SqlFormatter
                 if (currentToken.Value == ")")
                     complexityLevel--;
 
+                if (currentToken.Value == "BETWEEN")
+                    between = true;
+
                 if (currentToken.Value != "ORDER")
                     buffer.Append(currentToken.Value);
                 else
@@ -324,10 +328,15 @@ namespace SqlFormatter
                 {
                     if (tokens.Peek().Value == "AND")
                     {
-                        if (complexityLevel == 0)
+                        if (complexityLevel == 0 && !between)
+                        {
                             buffer.Append("\n  ");
+                        }
                         else
+                        {
                             buffer.Append(" ");
+                            between = false;
+                        }
 
                         this.NextToken();
                         this.AddExpectedToken(TokenType.Word, "AND");
@@ -348,7 +357,10 @@ namespace SqlFormatter
                     }
                     else
                     {
-                        buffer.Append(" ");
+                        if (!(currentToken.Value == "<" && tokens.Peek().Value == "=") &&
+                            !(currentToken.Value == ">" && tokens.Peek().Value == "=") &&
+                            !(currentToken.Value == "<" && tokens.Peek().Value == ">"))
+                            buffer.Append(" ");
                     }
                 }
             }

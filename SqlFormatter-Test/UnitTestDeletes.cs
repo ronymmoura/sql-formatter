@@ -21,8 +21,9 @@ namespace SqlFormatter_Test
         public void Delete_Where()
         {
             var expected = "DELETE FROM TEST\n" +
-                           "WHERE COLUMN_1 = COLUMN_1";
-            var formatter = new Formatter("DELETE FROM TEST WHERE COLUMN_1 = COLUMN_1");
+                           "WHERE COLUMN_1 = COLUMN_1\n" + 
+                           "  AND COLUMN_2 = COLUMN_2";
+            var formatter = new Formatter("DELETE FROM TEST WHERE COLUMN_1 = COLUMN_1 AND COLUMN_2 = COLUMN_2");
             Assert.AreEqual(expected, formatter.Format());
         }
 
