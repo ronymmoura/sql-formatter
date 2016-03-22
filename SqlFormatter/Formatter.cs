@@ -35,6 +35,9 @@ namespace SqlFormatter
 
                 else if (currentToken.Value == "INSERT")
                     this.FormatInsert();
+
+                else if (currentToken.Value == "DELETE")
+                    this.FormatDelete();
             }
 
             return buffer.ToString();
@@ -266,6 +269,24 @@ namespace SqlFormatter
             }
 
             buffer.Append(currentToken.Value);
+        }
+
+        #endregion
+
+        #region Delete specific formatters
+
+        private void FormatDelete()
+        {
+            this.AddExpectedToken(TokenType.Word, "DELETE");
+            this.AddExpectedToken(TokenType.Word, "FROM");
+
+            // Append the table name
+            this.buffer.Append(currentToken.Value);
+
+            if (tokens.Count > 0 && tokens.Peek().Value == "WHERE")
+            {
+                this.FormatWhere();
+            }
         }
 
         #endregion
