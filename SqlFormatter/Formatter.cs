@@ -32,6 +32,9 @@ namespace SqlFormatter
 
                 else if (currentToken.Value == "UPDATE")
                     this.FormatUpdate();
+
+                else if (currentToken.Value == "INSERT")
+                    this.FormatInsert();
             }
 
             return buffer.ToString();
@@ -199,6 +202,66 @@ namespace SqlFormatter
             while (tokens.Count > 0 && tokens.Peek().Value != "WHERE")
             {
                 buffer.Append(currentToken.Value + " ");
+
+                this.NextToken();
+            }
+
+            buffer.Append(currentToken.Value);
+        }
+
+        #endregion
+
+        #region Insert specific formatters
+
+        private void FormatInsert()
+        {
+            this.AddExpectedToken(TokenType.Word, "INSERT");
+            this.AddExpectedToken(TokenType.Word, "INTO");
+
+            // Append the table name
+            this.buffer.Append(currentToken.Value + " ");
+            this.NextToken();
+
+            if (currentToken.Value == "(")
+                this.FormatColumnList();
+
+            buffer.Append("\n");
+
+            this.FormatValues();
+
+            if(tokens.Count > 0 && tokens.Peek().Value == "WHERE")
+            {
+                this.FormatWhere();
+            }
+        }
+
+        private void FormatColumnList()
+        {
+            while(tokens.Count > 0 && currentToken.Value != ")")
+            {
+                buffer.Append(currentToken.Value);
+
+                if (currentToken.Value == ",")
+                    buffer.Append(" ");
+
+                this.NextToken();
+            }
+
+            buffer.Append(currentToken.Value);
+            this.NextToken();
+        }
+
+        private void FormatValues()
+        {
+            this.AddExpectedToken(TokenType.Word, "VALUES");
+
+            while (tokens.Count > 0 && tokens.Peek().Value != "WHERE")
+            {
+                buffer.Append(currentToken.Value);
+
+                if (currentToken.Value == ",")
+                    buffer.Append(" ");
+
                 this.NextToken();
             }
 

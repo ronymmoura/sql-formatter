@@ -57,7 +57,7 @@ namespace SqlFormatter_Test
         }
 
         [TestMethod]
-        public void Select_WhereNumbered()
+        public void Select_WhereNumber()
         {
             var expected = "SELECT * \n" +
                            "FROM TEST \n" +
