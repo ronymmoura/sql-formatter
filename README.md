@@ -1,5 +1,7 @@
 # SQL Formatter
 
+[![Build Status](https://travis-ci.org/ronymmoura-dotnet/sql-formatter.svg?branch=master)](https://travis-ci.org/ronymmoura-dotnet/sql-formatter)
+
 Formatter lib to turn your SQL pretty.
 
 ## Usage
