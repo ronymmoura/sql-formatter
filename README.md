@@ -20,3 +20,8 @@ Import the SqlFormatter namespace contained in SqlFormatter.dll.
 var formatter = new Formatter("SELECT * FROM TEST");
 var formattedSQL = formatter.Format();
 ```
+
+## To be implemented
+
+- Formatting of querys with CREATE, ALTER, DROP
+- A better way to format subquerys
