@@ -7,6 +7,12 @@ Formatter lib to turn your SQL pretty.
 
 ## Usage
 
+Import the nuget package:
+
+```
+Install-Package SqlFormatter -Pre
+```
+
 Import the SqlFormatter namespace contained in SqlFormatter.dll.
 
 ```csharp
