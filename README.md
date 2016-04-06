@@ -1,8 +1,7 @@
 # SQL Formatter
 
 [![NuGet version](https://badge.fury.io/nu/SqlFormatter.svg)](https://badge.fury.io/nu/SqlFormatter)
-[![Build Status](https://travis-ci.org/ronymmoura-dotnet/sql-formatter.svg?branch=master)](https://travis-ci.org/ronymmoura-dotnet/sql-formatter)
-[![Gitter](https://badges.gitter.im/ronymmoura-dotnet/sql-formatter.svg)](https://gitter.im/ronymmoura-dotnet/sql-formatter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://travis-ci.org/ronymmoura/sql-formatter.svg?branch=master)](https://travis-ci.org/ronymmoura-dotnet/sql-formatter)
 
 C# Library to turn your SQL pretty.
 
